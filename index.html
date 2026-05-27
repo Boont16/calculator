@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор рулонных штор</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f4f4;color:#1a1a1a;padding:16px}
+h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.subtitle{font-size:13px;color:#666;margin-bottom:20px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #ddd;margin-bottom:20px;flex-wrap:wrap}
+.tab{font-size:13px;padding:8px 16px;border:none;background:none;cursor:pointer;color:#666;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:600}
+.section{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:16px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr}}
+label{font-size:12px;color:#666;display:block;margin-bottom:4px}
+input,select{width:100%;font-size:14px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a}
+input:focus,select:focus{outline:none;border-color:#999}
+.price-display{background:#f4f4f4;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.price-label{font-size:13px;color:#666}
+.price-val{font-size:22px;font-weight:600;color:#1a1a1a}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;cursor:pointer}
+.btn:hover{background:#f4f4f4}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-primary:hover{background:#333}
+.btn-danger{color:#c0392b;border-color:#e0b0b0}
+.btn-danger:hover{background:#fdf0f0}
+.item-row{border:1px solid #e0e0e0;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.item-info{flex:1;font-size:13px}
+.item-title{font-weight:600;color:#1a1a1a}
+.item-meta{color:#666;font-size:12px;margin-top:2px}
+.item-price{font-size:15px;font-weight:600;color:#1a1a1a;white-space:nowrap}
+.total-block{background:#f4f4f4;border-radius:8px;padding:16px}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px;color:#666}
+.total-row.big{font-size:18px;font-weight:600;color:#1a1a1a;border-top:1px solid #ddd;padding-top:12px;margin-top:8px}
+.empty{text-align:center;padding:2rem;color:#999;font-size:14px}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:#f0f0f0;color:#555;margin-right:4px}
+.section-title{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:12px}
+.alert{font-size:13px;color:#c0392b;background:#fdf0f0;border-radius:8px;padding:8px 12px;margin-top:8px}
+.edit-panel{display:none;margin-top:12px;border-top:1px solid #eee;padding-top:12px}
+.edit-panel.open{display:block}
+.cat-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px 0}
+</style>
+</head>
+<body>
+<h1>Калькулятор</h1>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('calc')">Расчёт</button>
+  <button class="tab" onclick="showTab('order')">Заказ <span id="order-count" style="display:none;background:#1a1a1a;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
+  <button class="tab" onclick="showTab('prices')">Редактор цен</button>
+</div>
+
+<div id="tab-calc">
+  <div class="section">
+    <div class="section-title">Параметры изделия</div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div>
+        <label>Тип изделия</label>
+        <select id="product-type" onchange="onProductChange()">
+          <option value="MINI">Рулонные шторы MINI</option>
+          <option value="UNI1">Рулонные шторы UNI-1</option>
+          <option value="MINIZEBRA">Рулонные шторы MINI-ЗЕБРА</option>
+          <option value="UNI1ZEBRA">Рулонные шторы UNI-1 ЗЕБРА</option>
+          <option value="D25">Свободновисящая</option>
+          <option value="VERT">Вертикальные жалюзи</option>
+          <option value="HORIZ">Горизонтальные жалюзи</option>
+
+        </select>
+      </div>
+      <div id="cat-row">
+        <label>Категория ткани</label>
+        <select id="cat" onchange="calcPrice()"></select>
+      </div>
+      <div id="fabric-row">
+        <label id="fabric-vert-label" style="display:none">Ткань</label>
+        <select id="fabric-vert" style="display:none" onchange="calcPrice()"></select>
+      </div>
+      <div>
+        <label id="fabric-label">Название ткани</label>
+        <input type="text" id="fabric" placeholder="Например: Блэкаут белый">
+      </div>    </div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div>
+        <label>Количество, шт</label>
+        <input type="number" id="qty" value="1" min="1" oninput="calcPrice()">
+      </div>
+      <div>
+        <label id="width-label">Ширина (м)</label>
+        <input type="number" id="width" step="1" oninput="calcPrice()">
+      </div>
+      <div>
+        <label id="height-label">Высота (м)</label>
+        <input type="number" id="height" step="1" oninput="calcPrice()">
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div>
+        <label>Сторона управления</label>
+        <select id="side">
+          <option value="Правое">Правое</option>
+          <option value="Левое">Левое</option>
+        </select>
+      </div>
+      <div>
+        <label>Примечание к позиции (необязательно)</label>
+        <input type="text" id="note" placeholder="Например: спальня, окно 1">
+      </div>
+    </div>
+    <div class="price-display">
+      <span class="price-label">Стоимость позиции</span>
+      <span class="price-val" id="price-out">—</span>
+    </div>
+    <div id="price-alert"></div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn btn-primary" onclick="addToOrder()">+ Добавить в заказ</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-order" style="display:none">
+  <div class="section">
+    <div class="section-title">Данные клиента</div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div><label>Имя клиента</label><input type="text" id="client-name" placeholder="Иван Иванов"></div>
+      <div><label>Телефон</label><input type="text" id="client-phone" placeholder="+7 999 000-00-00"></div>
+      <div><label>Адрес</label><input type="text" id="client-addr" placeholder="ул. Ленина, 10, кв. 5"></div>
+    </div>
+    <div><label>Комментарий к заказу</label><input type="text" id="client-comment" placeholder="Любые пожелания..."></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Позиции заказа</div>
+    <div id="items-list"><div class="empty">Нет добавленных позиций</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Итог</div>
+    <div class="total-block">
+      <div class="total-row"><span>Сумма позиций</span><span id="sum-items">0 ₽</span></div>
+      <div class="total-row" style="align-items:flex-start;padding-top:8px">
+        <span style="padding-top:6px">Доп. расходы</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="extra-cost" value="0" min="0" style="width:90px;text-align:right" oninput="recalcTotal()">
+            <span style="font-size:13px">₽</span>
+          </div>
+          <input type="text" id="extra-label" placeholder="Описание расхода" style="width:180px;font-size:12px" oninput="recalcTotal()">
+        </div>
+      </div>
+      <div class="total-row" style="align-items:flex-start;padding-top:8px">
+        <span style="padding-top:6px">Скидка</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" id="discount" value="0" min="0" style="width:90px;text-align:right" oninput="recalcTotal()">
+          <span style="font-size:13px">₽</span>
+        </div>
+      </div>
+      <div class="total-row big"><span>Итого</span><span id="total-out">0 ₽</span></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-primary" onclick="generateReport()">📋 Сформировать отчёт</button>
+      <button class="btn btn-danger" onclick="clearOrder()">🗑 Очистить заказ</button>
+    </div>
+  </div>
+
+  <div id="report-block" style="display:none">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="section-title" style="margin:0">Отчёт по заказу</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="copy-btn" onclick="copyReport()">📋 Скопировать</button>
+          <button class="btn" style="background:#25D366;color:#fff;border-color:#25D366" onclick="sendWhatsApp()">WhatsApp</button>
+          <button class="btn" style="background:#2AABEE;color:#fff;border-color:#2AABEE" onclick="sendTelegram()">Telegram</button>
+          <button class="btn" style="background:#0077FF;color:#fff;border-color:#0077FF" onclick="sendVK()">ВКонтакте</button>
+          <button class="btn" style="background:#FF5722;color:#fff;border-color:#FF5722" onclick="sendMax()">Макс</button>
+          <button class="btn" style="background:#555;color:#fff;border-color:#555" onclick="sendNotes()">📝 Заметки</button>
+          <button class="btn" onclick="printOrder()">🖨 Печать</button>
+        </div>
+      </div>
+      <div id="report-content" style="background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:16px;font-size:14px;line-height:1.9;white-space:pre-wrap;font-family:monospace"></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-prices" style="display:none">
+  <div class="section">
+    <p style="font-size:13px;color:#666;margin-bottom:12px">Выберите тип изделия и категорию для редактирования цен.</p>
+    <div id="price-editor"></div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn btn-primary" onclick="savePrices()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
